@@ -1,0 +1,85 @@
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+    <meta charset='utf-8'>
+    <title>Explicación Proyecto LÓGIKA Lexer</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+        h1 { color: #1e293b; border-bottom: 2px solid #3b82f6; padding-bottom: 5px; }
+        h2 { color: #2563eb; margin-top: 25px; border-bottom: 1px solid #e2e8f0; }
+        h3 { color: #475569; margin-top: 20px; }
+        code { background-color: #f1f5f9; padding: 2px 4px; border-radius: 4px; font-family: Consolas, monospace; }
+        pre { background-color: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; font-family: Consolas, monospace; }
+        .ficha { background-color: #f0f9ff; padding: 15px; border-left: 5px solid #0ea5e9; margin: 20px 0; }
+        .prompt { background-color: #fdf2f8; padding: 15px; border-left: 5px solid #db2777; font-style: italic; }
+        .footer { margin-top: 50px; font-size: 0.8em; color: #94a3b8; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>Proyecto: LÓGIKA Lexer - Guía de Explicación y Presentación</h1>
+    
+    <p>Este documento sirve como base técnica y narrativa para explicar el proyecto a una audiencia externa (clase, tutor o cliente) y proporciona instrucciones estructuradas para que una IA genere una presentación visual.</p>
+
+    <div class="ficha">
+        <h2>1. Ficha Técnica del Proyecto</h2>
+        <ul>
+            <li><strong>Nombre:</strong> LÓGIKA Lexer</li>
+            <li><strong>Propósito:</strong> Analizador léxico para el lenguaje de programación experimental "LÓGIKA".</li>
+            <li><strong>Stack Tecnológico:</strong>
+                <ul>
+                    <li><strong>Frontend:</strong> React 18+ (Vite)</li>
+                    <li><strong>Estilos:</strong> Tailwind CSS (Arquitectura de diseño Glassmorphism).</li>
+                    <li><strong>Lógica:</strong> JavaScript (Motores de Expresiones Regulares).</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <h2>2. Conceptos Fundamentales</h2>
+    <h3>¿Qué es un Analizador Léxico?</h3>
+    <p>Es la primera fase de un compilador. Su función es leer el código fuente (texto plano) y agrupar los caracteres en unidades con significado llamadas <strong>Lexemas</strong>, clasificándolos en <strong>Tokens</strong>.</p>
+
+    <h3>El Lenguaje LÓGIKA</h3>
+    <p>LÓGIKA es un lenguaje estructurado con reglas estrictas:</p>
+    <ol>
+        <li><strong>Tipado fuerte:</strong> <code>entero</code>, <code>decimal</code>, <code>texto</code>, <code>logico</code>.</li>
+        <li><strong>Identificadores:</strong> Deben comenzar con una letra.</li>
+        <li><strong>Operadores:</strong> Soporte para operaciones aritméticas, relacionales y lógicas.</li>
+    </ol>
+
+    <h2>3. Arquitectura del Código</h2>
+    <h3>Lógica de Análisis (<code>lexer.js</code>)</h3>
+    <p>Se usa un arreglo de objetos <code>RULES</code> donde cada uno contiene un tipo de token y su expresión regular asociada. El orden importa para evitar colisiones entre palabras reservadas e identificadores.</p>
+    
+    <h3>Componentes de Interfaz</h3>
+    <ul>
+        <li><strong>App.jsx:</strong> Orquestador del estado principal.</li>
+        <li><strong>TokenTable.jsx:</strong> Renderiza los tokens identificados.</li>
+        <li><strong>ErrorTable.jsx:</strong> Resalta los fallos léxicos con alertas visuales.</li>
+    </ul>
+
+    <h2>4. Guía para la Presentación (Storytelling)</h2>
+    <ol>
+        <li><strong>Introducción:</strong> Presenta el problema y la solución.</li>
+        <li><strong>Demostración en Vivo:</strong> Usa el "ExampleSelector" para mostrar el análisis instantáneo.</li>
+        <li><strong>El "Cerebro":</strong> Explica el uso de Expresiones Regulares (Regex).</li>
+        <li><strong>Manejo de Errores:</strong> Demuestra cómo el sistema ayuda al programador con sugerencias.</li>
+        <li><strong>Diseño:</strong> Resalta la estética moderna (Modo Oscuro).</li>
+    </ol>
+
+    <h2>5. Instrucciones para la IA (Presentación Automática)</h2>
+    <div class="prompt">
+        <p>"Actúa como un experto en compiladores y diseño de UI. Crea una estructura de 5 diapositivas para una presentación ejecutiva basada en este documento. Cada diapositiva debe tener un título impactante, 3 puntos clave y una sugerencia de imagen visual."</p>
+    </div>
+
+    <h2>6. Ejemplos de Código</h2>
+    <pre>
+entero edad = 20;
+logico esMayor = verdadero;
+texto mensaje = "Bienvenido";
+    </pre>
+
+    <div class="footer">
+        <p>© 2026 LÓGIKA Lexer Project - Generado por Antigravity AI</p>
+    </div>
+</body>
+</html>
