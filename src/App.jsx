@@ -1,23 +1,41 @@
 import React, { useState } from 'react';
 import { tokenize } from './logic/lexer';
+import { parse } from './logic/parser';
 import TokenTable from './components/TokenTable';
 import ErrorTable from './components/ErrorTable';
 import ExampleSelector from './components/ExampleSelector';
 
 function App() {
   const [code, setCode] = useState('');
-  const [results, setResults] = useState({ tokens: [], errors: [] });
+  const [results, setResults] = useState({ 
+    tokens: [], 
+    lexicalErrors: [], 
+    syntacticErrors: [], 
+    semanticErrors: [] 
+  });
   const [isAnalyzed, setIsAnalyzed] = useState(false);
 
   const handleAnalyze = () => {
-    const { tokens, errors } = tokenize(code);
-    setResults({ tokens, errors });
+    const { tokens, errors: lexicalErrors } = tokenize(code);
+    const { syntacticErrors, semanticErrors } = parse(tokens);
+    
+    setResults({ 
+      tokens, 
+      lexicalErrors, 
+      syntacticErrors, 
+      semanticErrors 
+    });
     setIsAnalyzed(true);
   };
 
   const handleClear = () => {
     setCode('');
-    setResults({ tokens: [], errors: [] });
+    setResults({ 
+      tokens: [], 
+      lexicalErrors: [], 
+      syntacticErrors: [], 
+      semanticErrors: [] 
+    });
     setIsAnalyzed(false);
   };
 
@@ -92,7 +110,27 @@ function App() {
             ) : (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <TokenTable tokens={results.tokens} />
-                <ErrorTable errors={results.errors} />
+                
+                {/* Tabla de Errores Léxicos */}
+                <ErrorTable 
+                  errors={results.lexicalErrors} 
+                  title="Errores Léxicos" 
+                  type="lexical" 
+                />
+                
+                {/* Tabla de Errores Sintácticos */}
+                <ErrorTable 
+                  errors={results.syntacticErrors} 
+                  title="Errores Sintácticos (Gramática)" 
+                  type="syntactic" 
+                />
+
+                {/* Tabla de Errores Semánticos */}
+                <ErrorTable 
+                  errors={results.semanticErrors} 
+                  title="Errores Semánticos (Coherencia y Tipos)" 
+                  type="semantic" 
+                />
               </div>
             )}
           </section>

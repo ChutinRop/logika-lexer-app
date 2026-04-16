@@ -1,37 +1,77 @@
 import React from 'react';
 
-const ErrorTable = ({ errors }) => {
+const ErrorTable = ({ errors, title = "Errores Léxicos", type = "lexical" }) => {
   if (errors.length === 0) return null;
 
+  const styles = {
+    lexical: {
+      container: "bg-red-500/5 border-red-500/20 shadow-red-500/10",
+      header: "bg-red-500/10 border-red-500/20",
+      title: "text-red-400",
+      dot: "bg-red-500",
+      th: "bg-red-500/5",
+      divide: "divide-red-500/10",
+      rowHover: "hover:bg-red-500/5",
+      orderCell: "text-red-300",
+      label: "text-red-400/80"
+    },
+    syntactic: {
+      container: "bg-amber-500/5 border-amber-500/20 shadow-amber-500/10",
+      header: "bg-amber-500/10 border-amber-500/20",
+      title: "text-amber-400",
+      dot: "bg-amber-500",
+      th: "bg-amber-500/5",
+      divide: "divide-amber-500/10",
+      rowHover: "hover:bg-amber-500/5",
+      orderCell: "text-amber-300",
+      label: "text-amber-400/80"
+    },
+    semantic: {
+      container: "bg-fuchsia-500/5 border-fuchsia-500/20 shadow-fuchsia-500/10",
+      header: "bg-fuchsia-500/10 border-fuchsia-500/20",
+      title: "text-fuchsia-400",
+      dot: "bg-fuchsia-500",
+      th: "bg-fuchsia-500/5",
+      divide: "divide-fuchsia-500/10",
+      rowHover: "hover:bg-fuchsia-500/5",
+      orderCell: "text-fuchsia-300",
+      label: "text-fuchsia-400/80"
+    }
+  };
+
+  const s = styles[type] || styles.lexical;
+
   return (
-    <div className="mt-8 overflow-hidden rounded-xl bg-red-500/5 border border-red-500/20 glow shadow-red-500/10">
-      <div className="bg-red-500/10 px-6 py-4 border-b border-red-500/20">
-        <h2 className="text-xl font-bold text-red-400 flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
-          Errores Léxicos Detectados
+    <div className={`mt-8 overflow-hidden rounded-xl border glow ${s.container}`}>
+      <div className={`px-6 py-4 border-b ${s.header}`}>
+        <h2 className={`text-xl font-bold flex items-center gap-2 ${s.title}`}>
+          <span className={`w-3 h-3 rounded-full animate-pulse ${s.dot}`}></span>
+          {title}
         </h2>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-red-500/5 text-slate-300 text-sm uppercase tracking-wider">
-              <th className="px-6 py-4 font-medium"># Error</th>
+            <tr className={`text-slate-300 text-sm uppercase tracking-wider ${s.th}`}>
+              <th className="px-6 py-4 font-medium">#</th>
               <th className="px-6 py-4 font-medium">Descripción</th>
               <th className="px-6 py-4 font-medium">Sugerencia de Corrección</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-red-500/10">
+          <tbody className={`divide-y ${s.divide}`}>
             {errors.map((error) => (
               <tr 
                 key={error.order} 
-                className="hover:bg-red-500/5 transition-colors"
+                className={`transition-colors ${s.rowHover}`}
               >
-                <td className="px-6 py-4 text-red-300 font-mono text-sm max-w-[80px]">
+                <td className={`px-6 py-4 font-mono text-sm max-w-[80px] ${s.orderCell}`}>
                   {error.order}
                 </td>
                 <td className="px-6 py-4 text-slate-200">
                   <div className="flex flex-col">
-                    <span className="text-red-400/80 text-xs font-mono uppercase mb-1">Error en lexema: {error.value}</span>
+                    <span className={`text-xs font-mono uppercase mb-1 ${s.label}`}>
+                      {type === 'lexical' ? 'Lexema' : 'Incidencia'}: {error.value}
+                    </span>
                     <p>{error.description}</p>
                   </div>
                 </td>
@@ -51,5 +91,7 @@ const ErrorTable = ({ errors }) => {
     </div>
   );
 };
+
+
 
 export default ErrorTable;
