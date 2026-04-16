@@ -53,7 +53,7 @@ export function parse(tokens) {
   while (current < filteredTokens.length) {
     const token = peek();
 
-    // REGLA: Declaración (entero x = 10;)
+    // REGLA: Declaración (entero x = 10 + a;)
     if (token.rawType === 'T_DATO') {
       const typeToken = consume();
       const idToken = expect('T_ID', "Se esperaba un nombre para la variable.");
@@ -72,29 +72,26 @@ export function parse(tokens) {
           suggestion: "Use un nombre diferente o elimine la declaración duplicada."
         });
       } else {
-        symbolTable[idToken.value] = typeToken.value; // ej: 'entero'
+        symbolTable[idToken.value] = typeToken.value;
       }
 
       const next = peek();
       if (next && next.rawType === 'T_ASIGNACION') {
         consume(); // '='
-        const valToken = consume(); // Tomamos el valor
-        
-        // Semántico: Validación de tipos
-        if (valToken) {
-          validateTypeConsistency(typeToken.value, valToken, semanticErrors);
-        }
+        // Procesar expresión hasta el ';'
+        processExpression(typeToken.value);
       }
 
       expect('T_FIN', "Falta el punto y coma ';' al final de la declaración.");
     } 
     
-    // REGLA: Asignación (x = 20;)
+    // REGLA: Asignación (x = y + 5;)
     else if (token.rawType === 'T_ID') {
       const idToken = consume();
+      const varType = symbolTable[idToken.value];
       
       // Semántico: ¿Declarada?
-      if (!symbolTable[idToken.value]) {
+      if (!varType) {
         semanticErrors.push({
           order: semanticErrors.length + 1,
           value: idToken.value,
@@ -105,32 +102,61 @@ export function parse(tokens) {
 
       const assign = expect('T_ASIGNACION', "Se esperaba '=' para asignar un valor.");
       if (assign) {
-        const valToken = consume();
-        if (valToken && symbolTable[idToken.value]) {
-          validateTypeConsistency(symbolTable[idToken.value], valToken, semanticErrors);
-        }
+        processExpression(varType || 'unknown');
       }
       expect('T_FIN', "Falta el punto y coma ';' al final de la asignación.");
     }
 
-    // REGLA: Bloques 
-    else if (token.rawType === 'T_LLAVE_ABRE') {
-      consume();
-    } else if (token.rawType === 'T_LLAVE_CIERRA') {
+    // REGLA: Bloques (Permitir llaves sin forzar nada en su interior todavía)
+    else if (token.rawType === 'T_LLAVE_ABRE' || token.rawType === 'T_LLAVE_CIERRA') {
       consume();
     }
 
-    // REGLA: Paréntesis sueltos u otros errores estructurales
+    // REGLA: Paréntesis (Pueden venir de expresiones mal cortadas o mal formadas)
+    else if (token.rawType === 'T_PAR_ABRE' || token.rawType === 'T_PAR_CIERRA') {
+        consume();
+    }
+
     else {
       syntacticErrors.push({
         order: syntacticErrors.length + 1,
         value: token.value,
         description: `Estructura inesperada: '${token.value}'.`,
-        suggestion: "Verifique si olvidó declarar una variable o si el orden es correcto."
+        suggestion: "Verifique si el orden de los elementos es correcto."
       });
       consume();
     }
   }
+
+  function processExpression(expectedType) {
+    let firstToken = peek();
+    let hasCheckedType = false;
+
+    while (current < filteredTokens.length && filteredTokens[current].rawType !== 'T_FIN' && filteredTokens[current].rawType !== 'T_LLAVE_CIERRA') {
+      const t = consume();
+      
+      // Semántico: Validar identificadores dentro de la expresión
+      if (t.rawType === 'T_ID') {
+        if (!symbolTable[t.value]) {
+          semanticErrors.push({
+            order: semanticErrors.length + 1,
+            value: t.value,
+            description: `Variable '${t.value}' no declarada en esta expresión.`,
+            suggestion: "Asegúrese de declarar todas las variables antes de usarlas."
+          });
+        }
+      }
+
+      // Semántico: Validación de tipos simplificada basada en el primer token de la expresión
+      if (!hasCheckedType && expectedType !== 'unknown') {
+        if (['T_ENTERO', 'T_DECIMAL', 'T_TEXTO', 'T_LOGICO'].includes(t.rawType)) {
+          validateTypeConsistency(expectedType, t, semanticErrors);
+          hasCheckedType = true;
+        }
+      }
+    }
+  }
+
 
   return { syntacticErrors, semanticErrors };
 }
