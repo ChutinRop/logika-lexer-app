@@ -129,12 +129,21 @@ export function parse(tokens) {
   }
 
   function processExpression(expectedType) {
-    let firstToken = peek();
-    let hasCheckedType = false;
+    let hasBooleanOp = false;
+    let firstLiteralOrId = null;
+    const expressionTokens = [];
 
-    while (current < filteredTokens.length && filteredTokens[current].rawType !== 'T_FIN' && filteredTokens[current].rawType !== 'T_LLAVE_CIERRA') {
+    while (current < filteredTokens.length && 
+           filteredTokens[current].rawType !== 'T_FIN' && 
+           filteredTokens[current].rawType !== 'T_LLAVE_CIERRA') {
       const t = consume();
+      expressionTokens.push(t);
       
+      // Detectar si la expresión dará un resultado lógico
+      if (t.rawType === 'T_OP_REL' || t.rawType === 'T_OP_LOG') {
+        hasBooleanOp = true;
+      }
+
       // Semántico: Validar identificadores dentro de la expresión
       if (t.rawType === 'T_ID') {
         if (!symbolTable[t.value]) {
@@ -145,14 +154,37 @@ export function parse(tokens) {
             suggestion: "Asegúrese de declarar todas las variables antes de usarlas."
           });
         }
+        if (!firstLiteralOrId) firstLiteralOrId = t;
       }
 
-      // Semántico: Validación de tipos simplificada basada en el primer token de la expresión
-      if (!hasCheckedType && expectedType !== 'unknown') {
-        if (['T_ENTERO', 'T_DECIMAL', 'T_TEXTO', 'T_LOGICO'].includes(t.rawType)) {
-          validateTypeConsistency(expectedType, t, semanticErrors);
-          hasCheckedType = true;
+      if (!firstLiteralOrId && ['T_ENTERO', 'T_DECIMAL', 'T_TEXTO', 'T_LOGICO'].includes(t.rawType)) {
+        firstLiteralOrId = t;
+      }
+    }
+
+    // Inferencia de tipo final de la expresión
+    if (expectedType !== 'unknown' && expressionTokens.length > 0) {
+      let inferredType = 'unknown';
+
+      if (hasBooleanOp) {
+        inferredType = 'logico';
+      } else if (firstLiteralOrId) {
+        if (firstLiteralOrId.rawType === 'T_ID') {
+          inferredType = symbolTable[firstLiteralOrId.value] || 'unknown';
+        } else {
+          // Mapear rawType a tipo lógico (T_ENTERO -> entero, etc.)
+          const map = {
+            'T_ENTERO': 'entero',
+            'T_DECIMAL': 'decimal',
+            'T_TEXTO': 'texto',
+            'T_LOGICO': 'logico'
+          };
+          inferredType = map[firstLiteralOrId.rawType] || 'unknown';
         }
+      }
+
+      if (inferredType !== 'unknown') {
+        validateTypeConsistency(expectedType, inferredType, expressionTokens[0]?.value || 'expresión', semanticErrors);
       }
     }
   }
@@ -161,22 +193,19 @@ export function parse(tokens) {
   return { syntacticErrors, semanticErrors };
 }
 
-function validateTypeConsistency(expectedType, valToken, semanticErrors) {
-  const actualRawType = valToken.rawType;
+function validateTypeConsistency(expectedType, actualType, contextValue, semanticErrors) {
   let isCompatible = false;
 
-  if (expectedType === 'entero' && actualRawType === 'T_ENTERO') isCompatible = true;
-  else if (expectedType === 'decimal' && (actualRawType === 'T_DECIMAL' || actualRawType === 'T_ENTERO')) isCompatible = true;
-  else if (expectedType === 'texto' && actualRawType === 'T_TEXTO') isCompatible = true;
-  else if (expectedType === 'logico' && actualRawType === 'T_LOGICO') isCompatible = true;
-  else if (actualRawType === 'T_ID') isCompatible = true; // Simplificado: asumimos compatible si es otra variable
+  if (expectedType === actualType) isCompatible = true;
+  else if (expectedType === 'decimal' && actualType === 'entero') isCompatible = true; // entero cabe en decimal
+  else if (actualType === 'unknown') isCompatible = true; // Evitar errores en cascada
 
   if (!isCompatible) {
     semanticErrors.push({
       order: semanticErrors.length + 1,
-      value: valToken.value,
-      description: `Incompatibilidad de tipos: No se puede asignar un valor de tipo '${actualRawType}' a una variable de tipo '${expectedType}'.`,
-      suggestion: `Asegúrese de que el valor coincida con el tipo '${expectedType}'.`
+      value: contextValue,
+      description: `Incompatibilidad de tipos: No se puede asignar un resultado de tipo '${actualType}' a una variable de tipo '${expectedType}'.`,
+      suggestion: `Asegúrese de que la expresión resulte en un valor compatible con '${expectedType}'.`
     });
   }
 }
