@@ -162,6 +162,17 @@ export function parse(tokens) {
       }
     }
 
+    // Error Sintáctico: Asignación vacía
+    if (expressionTokens.length === 0) {
+      syntacticErrors.push({
+        order: syntacticErrors.length + 1,
+        value: '=',
+        description: "Se esperaba una expresión o valor después del operador de asignación.",
+        suggestion: "Asigne un valor numérico, de texto o lógico (ej: x = 10;)."
+      });
+      return;
+    }
+
     // Inferencia de tipo final de la expresión
     if (expectedType !== 'unknown' && expressionTokens.length > 0) {
       let inferredType = 'unknown';
